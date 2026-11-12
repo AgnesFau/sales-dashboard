@@ -1,5 +1,6 @@
 import streamlit as st
-from src.metrics import filter_sales, load_sales
+import plotly.express as px
+from src.metrics import filter_sales, load_sales, sales_by, sales_by_shop
 
 st.set_page_config(page_title="Mama Rosa's Bakery", layout="wide")
 
@@ -55,3 +56,26 @@ col1, col2, col3 = st.columns(3)
 col1.metric("Revenue", f"${revenue:,.0f}")
 col2.metric("Profit", f"${profit:,.0f}", f"{margin:.0f}% margin", delta_color="off")
 col3.metric("Orders", f"{orders:,}")
+
+st.subheader("Sales over time")
+
+left, right = st.columns(2)
+group = left.radio("Group by", ["Day", "Week", "Month"], horizontal=True, index=2)
+split = right.checkbox("Split by shop")
+
+freq = {"Day": "D", "Week": "W", "Month": "MS"}[group]
+
+if split:
+    data = sales_by_shop(filtered, freq)
+    fig = px.line(data, x="timestamp", y="revenue", color="shop")
+else:
+    data = sales_by(filtered, freq).reset_index()
+    fig = px.line(data, x="timestamp", y="revenue")
+
+fig.update_layout(
+    xaxis_title=None,
+    yaxis_title="Revenue ($)",
+    hovermode="x unified",
+    margin=dict(l=0, r=0, t=10, b=0),
+)
+st.plotly_chart(fig, width="stretch")

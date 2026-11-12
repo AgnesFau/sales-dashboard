@@ -82,3 +82,19 @@ def filter_sales(sales, start, end, shops, categories):
         & sales["category"].isin(categories)
     )
     return sales[mask]
+
+def sales_by(df, freq):
+    return (df.set_index("timestamp")
+              .resample(freq)
+              .agg(revenue=("revenue", "sum"),
+                   profit=("profit", "sum"),
+                   orders=("revenue", "count"))
+              .round(2))
+
+
+def sales_by_shop(df, freq):
+    return (df.groupby(["shop", pd.Grouper(key="timestamp", freq=freq)])
+              [["revenue", "profit"]]
+              .sum()
+              .round(2)
+              .reset_index())
