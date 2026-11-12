@@ -53,3 +53,22 @@ gross_value = online.loc[online["status"] == "delivered", "revenue"].sum()
 
 by_product = (paid.assign(refunded=paid["status"] == "refunded").groupby("product")["refunded"].mean().mul(100).round(1).sort_values(ascending=False))
 monthly = (paid.assign(refunded=paid["status"] == "refunded").set_index("timestamp")["refunded"].resample("MS").mean().mul(100).round(1))
+
+def add_revenue(df):
+    df = df.copy()
+    df["revenue"] = df["quantity"] * df["price"] * (1 - df["discount_pct"] / 100)
+    df.loc[df["status"] == "cancelled", "revenue"] = 0
+    return df
+
+if __name__ == "__main__":
+    sales = pd.read_csv("data/cleaned/sales.csv", parse_dates=["timestamp"])
+    sales = add_revenue(sales)
+    # ... your prints and the rest
+
+def load_sales(path="data/cleaned/sales.csv"):
+    sales = pd.read_csv(path, parse_dates=["timestamp"])
+    sales = add_revenue(sales)
+    sales["cost"] = sales["quantity"] * sales["unit_cost"]
+    sales.loc[sales["status"].isin(["cancelled", "refunded"]), "cost"] = 0
+    sales["profit"] = sales["revenue"] - sales["cost"]
+    return sales
