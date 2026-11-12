@@ -41,5 +41,15 @@ cakes = sales[sales["category"] == "cake"]
 by_shop = cakes.groupby("shop").agg(revenue=("revenue", "sum"), profit=("profit", "sum"))
 by_shop["margin_%"] = (by_shop["profit"] / by_shop["revenue"] * 100).round(1)
 
+online = sales[sales["shop"] == "online"]
 
+refunded = (online["status"] == "refunded").sum()
+refund_rate = refunded / len(online) * 100
+paid = online[online["status"].isin(["delivered", "refunded"])]
+rate = (paid["status"] == "refunded").mean() * 100
 
+refund_value = -online.loc[online["status"] == "refunded", "revenue"].sum()
+gross_value = online.loc[online["status"] == "delivered", "revenue"].sum()
+
+by_product = (paid.assign(refunded=paid["status"] == "refunded").groupby("product")["refunded"].mean().mul(100).round(1).sort_values(ascending=False))
+monthly = (paid.assign(refunded=paid["status"] == "refunded").set_index("timestamp")["refunded"].resample("MS").mean().mul(100).round(1))
