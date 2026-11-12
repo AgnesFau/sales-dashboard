@@ -1,6 +1,6 @@
 import streamlit as st
 import plotly.express as px
-from src.metrics import filter_sales, load_sales, sales_by, sales_by_shop
+from src.metrics import filter_sales, load_sales, sales_by, sales_by_shop, sales_by_hour
 
 st.set_page_config(page_title="Mama Rosa's Bakery", layout="wide")
 
@@ -137,3 +137,24 @@ fig_margin = px.bar(
 fig_margin.update_layout(xaxis_title=None, yaxis_title="%",
                          margin=dict(l=0, r=0, t=40, b=0))
 col_margin.plotly_chart(fig_margin, width="stretch")
+
+st.subheader("Busiest hour")
+
+measure = st.radio("Measure", ["Orders", "Revenue"], horizontal=True)
+by = measure.lower()
+
+hourly = sales_by_hour(filtered, by)
+
+peak_hour = hourly.sum(axis=1).idxmax()
+st.caption(f"Busiest hour, all selected shops together: {peak_hour:02d}:00")
+
+fig = px.line(hourly, markers=True)
+fig.update_layout(
+    xaxis_title="Hour of day",
+    yaxis_title=measure,
+    legend_title=None,
+    hovermode="x unified",
+    xaxis=dict(dtick=2),
+    margin=dict(l=0, r=0, t=10, b=0),
+)
+st.plotly_chart(fig, width="stretch")

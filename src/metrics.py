@@ -123,3 +123,15 @@ def shop_summary(df):
     )
     out["margin_%"] = (out["profit"] / out["revenue"] * 100).round(1)
     return out.round(2).sort_values("revenue", ascending=False).reset_index()
+
+def sales_by_hour(df, by="revenue"):
+    d = df.assign(hour=df["timestamp"].dt.hour)
+    if by == "orders":
+        d = d[d["status"] != "cancelled"]
+        s = d.groupby(["shop", "hour"]).size()
+    else:
+        s = d.groupby(["shop", "hour"])[by].sum()
+    table = s.unstack("shop").reindex(range(24)).fillna(0)
+    table.index.name = "hour"
+    return table.round(2)
+
