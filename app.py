@@ -84,6 +84,7 @@ report = pd.DataFrame({
 })
 report["fixed"] = report["before"] - report["after"]
 report.to_csv("data/reports/online_report.csv", index=False)
+online_orders["shop"] = "online"
 
 online_orders.to_csv('data/cleaned/online_cleaned.csv', index=False)
 
@@ -107,6 +108,7 @@ shop1_sales['price'] = shop1_sales['price'].fillna(shop1_sales['product'].map(pr
 
 shop1_sales.loc[~shop1_sales["quantity"].between(1, 20), "quantity"] = 1
 shop1_sales = shop1_sales.drop_duplicates(subset=["timestamp", "product", "quantity", "price"])
+shop1_sales["shop"] = "shop1"
 
 shop1_sales.to_csv('data/cleaned/shop1_sales_cleaned.csv', index=False)
 
@@ -130,6 +132,7 @@ shop2_sales['price'] = shop2_sales['price'].fillna(shop2_sales['product'].map(pr
 
 shop2_sales.loc[~shop2_sales["quantity"].between(1, 20), "quantity"] = 1
 shop2_sales = shop2_sales.drop_duplicates(subset=["timestamp", "product", "quantity", "price"])
+shop2_sales["shop"] = "shop2"
 
 shop2_sales.to_csv('data/cleaned/shop2_sales_cleaned.csv', index=False)
 
@@ -153,5 +156,22 @@ shop3_sales['price'] = shop3_sales['price'].fillna(shop3_sales['product'].map(pr
 
 shop3_sales.loc[~shop3_sales["quantity"].between(1, 20), "quantity"] = 1
 shop3_sales = shop3_sales.drop_duplicates(subset=["timestamp", "product", "quantity", "price"])
+shop3_sales["shop"] = "shop3"
 
 shop3_sales.to_csv("data/cleaned/shop3_sales_cleaned.csv", index=False)
+
+# Merge Sales Data
+COLUMNS = ["timestamp", "shop", "product", "quantity", "price", "discount_pct", "status"]
+
+def prepare(df):
+    df = df.copy()
+    if "discount_pct" not in df:
+        df["discount_pct"] = 0
+    if "status" not in df:
+        df["status"] = "delivered"
+    return df[COLUMNS]
+
+sales = pd.concat([prepare(online_orders), prepare(shop1_sales), prepare(shop2_sales), prepare(shop3_sales)], ignore_index=True)
+
+sales = sales.merge(products[["product", "category", "unit_cost"]], on="product", how="left")
+sales.to_csv("data/cleaned/sales.csv", index=False)
