@@ -109,3 +109,26 @@ shop1_sales.loc[~shop1_sales["quantity"].between(1, 20), "quantity"] = 1
 shop1_sales = shop1_sales.drop_duplicates(subset=["timestamp", "product", "quantity", "price"])
 
 shop1_sales.to_csv('data/cleaned/shop1_sales_cleaned.csv', index=False)
+
+# Shop 2 Sales Data Cleaning
+shop2_sales = shop2_sales.rename(columns={
+    "Sale Date": "timestamp",
+    "Item": "product",
+    "Quantity": "quantity",
+    "Price Each": "price",
+    "Paid By": "payment"
+})
+shop2_sales["product"] = shop2_sales["product"].str.strip().str.lower().str.replace(r"\s+", " ", regex=True).replace(PRODUCT_CORRECTION)
+shop2_sales["timestamp"] = pd.to_datetime(
+    shop2_sales["timestamp"],
+    format="%d/%m/%Y %H:%M",
+    errors="coerce",
+)
+
+shop2_sales.loc[shop2_sales["price"] < 0, "price"] = pd.NA
+shop2_sales['price'] = shop2_sales['price'].fillna(shop2_sales['product'].map(products.set_index('product')['list_price']))
+
+shop2_sales.loc[~shop2_sales["quantity"].between(1, 20), "quantity"] = 1
+shop2_sales = shop2_sales.drop_duplicates(subset=["timestamp", "product", "quantity", "price"])
+
+shop2_sales.to_csv('data/cleaned/shop2_sales_cleaned.csv', index=False)
