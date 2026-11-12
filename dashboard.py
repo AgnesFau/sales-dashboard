@@ -1,6 +1,6 @@
 import streamlit as st
 import plotly.express as px
-from src.metrics import filter_sales, load_sales, sales_by, sales_by_shop, sales_by_hour
+from src.metrics import filter_sales, load_sales, sales_by, sales_by_shop, sales_by_hour, make_insights
 
 st.set_page_config(page_title="Mama Rosa's Bakery", layout="wide")
 
@@ -158,3 +158,8 @@ fig.update_layout(
     margin=dict(l=0, r=0, t=10, b=0),
 )
 st.plotly_chart(fig, width="stretch")
+
+st.subheader("Insights")
+with st.container(border=True):
+    for line in make_insights(filtered):
+        st.markdown(f"- {line}")

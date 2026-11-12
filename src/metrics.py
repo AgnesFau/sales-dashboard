@@ -135,3 +135,38 @@ def sales_by_hour(df, by="revenue"):
     table.index.name = "hour"
     return table.round(2)
 
+def make_insights(df):
+    insights = []
+
+    shops = shop_summary(df)
+    if len(shops) >= 2:
+        worst = shops.loc[shops["margin_%"].idxmin()]
+        best = shops.loc[shops["margin_%"].idxmax()]
+        insights.append(
+            f"**{worst['shop'].title()}** keeps only {worst['margin_%']:.0f} cents "
+            f"of every dollar it sells. **{best['shop'].title()}** keeps "
+            f"{best['margin_%']:.0f} cents."
+        )
+
+    total_revenue = df["revenue"].sum()
+    total_profit = df["profit"].sum()
+    cake = df[df["category"] == "cake"]
+    if len(cake) and total_revenue > 0 and total_profit > 0:
+        revenue_share = cake["revenue"].sum() / total_revenue * 100
+        profit_share = cake["profit"].sum() / total_profit * 100
+        insights.append(
+            f"Cakes bring in {revenue_share:.0f}% of all sales "
+            f"but only {profit_share:.0f}% of the profit."
+        )
+
+    hourly = sales_by_hour(df, "orders")
+    parts = []
+    shop_cols = [c for c in hourly.columns if c != "online"]
+    if shop_cols and hourly[shop_cols].to_numpy().sum() > 0:
+        parts.append(f"shops are busiest at {hourly[shop_cols].sum(axis=1).idxmax():02d}:00")
+    if "online" in hourly.columns and hourly["online"].sum() > 0:
+        parts.append(f"online orders peak at {hourly['online'].idxmax():02d}:00")
+    if parts:
+        insights.append(" while ".join(parts).capitalize() + ".")
+
+    return insights
