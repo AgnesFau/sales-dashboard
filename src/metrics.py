@@ -63,12 +63,22 @@ def add_revenue(df):
 if __name__ == "__main__":
     sales = pd.read_csv("data/cleaned/sales.csv", parse_dates=["timestamp"])
     sales = add_revenue(sales)
-    # ... your prints and the rest
 
 def load_sales(path="data/cleaned/sales.csv"):
-    sales = pd.read_csv(path, parse_dates=["timestamp"])
+    sales = pd.read_csv(path)
+    sales["timestamp"] = pd.to_datetime(sales["timestamp"].str.upper(), format="mixed", errors="coerce")
     sales = add_revenue(sales)
     sales["cost"] = sales["quantity"] * sales["unit_cost"]
     sales.loc[sales["status"].isin(["cancelled", "refunded"]), "cost"] = 0
     sales["profit"] = sales["revenue"] - sales["cost"]
     return sales
+
+def filter_sales(sales, start, end, shops, categories):
+    end_exclusive = pd.Timestamp(end) + pd.Timedelta(days=1)   # include whole end day
+    mask = (
+        (sales["timestamp"] >= pd.Timestamp(start))
+        & (sales["timestamp"] < end_exclusive)
+        & sales["shop"].isin(shops)
+        & sales["category"].isin(categories)
+    )
+    return sales[mask]

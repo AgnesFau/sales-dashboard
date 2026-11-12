@@ -1,24 +1,54 @@
 import streamlit as st
-
-from src.metrics import load_sales
+from src.metrics import filter_sales, load_sales
 
 st.set_page_config(page_title="Mama Rosa's Bakery", layout="wide")
-
 
 @st.cache_data
 def get_data():
     return load_sales()
-
 
 sales = get_data()
 
 st.title("Mama Rosa's Bakery")
 st.caption("Sales dashboard: 3 shops and the online store, Jan 2024 to Jun 2025")
 
-# ---------- KPI row ----------
-revenue = sales["revenue"].sum()
-profit = sales["profit"].sum()
-orders = (sales["status"] != "cancelled").sum()
+st.sidebar.header("Filters")
+
+min_date = sales["timestamp"].min().date()
+max_date = sales["timestamp"].max().date()
+
+date_range = st.sidebar.date_input(
+    "Date range",
+    value=(min_date, max_date),
+    min_value=min_date,
+    max_value=max_date,
+)
+
+all_shops = sorted(sales["shop"].unique())
+shops = st.sidebar.multiselect("Shop", all_shops, default=all_shops)
+
+all_categories = sorted(sales["category"].unique())
+categories = st.sidebar.multiselect(
+    "Category", all_categories, default=all_categories, format_func=str.title
+)
+
+if len(date_range) != 2:
+    st.info("Pick an end date.")
+    st.stop()
+
+start, end = date_range
+
+filtered = filter_sales(sales, start, end, shops, categories)
+
+if filtered.empty:
+    st.warning("No sales for these filters.")
+    st.stop()
+
+st.sidebar.write(f"Rows after filter: {len(filtered):,} of {len(sales):,}")
+
+revenue = filtered["revenue"].sum()
+profit = filtered["profit"].sum()
+orders = (filtered["status"] != "cancelled").sum()
 margin = profit / revenue * 100
 
 col1, col2, col3 = st.columns(3)
