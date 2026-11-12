@@ -1,0 +1,8 @@
+metric,before,after,fixed
+rows,6065,6000,65
+missing_values,797,0,797
+duplicated,65,0,65
+negative_prices,305,303,2
+odd_qty,0,0,0
+odd_discounts,14,0,14
+unique_products,50,12,38
