@@ -79,3 +79,34 @@ fig.update_layout(
     margin=dict(l=0, r=0, t=10, b=0),
 )
 st.plotly_chart(fig, width="stretch")
+
+from src.metrics import (bottom_products, filter_sales, load_sales, sales_by, sales_by_shop, top_products)
+
+st.subheader("Top and bottom products")
+
+left, right = st.columns(2)
+label = left.radio("Rank by", ["Revenue", "Profit", "Units sold"], horizontal=True)
+n = right.slider("How many", 3, 6, 5)
+
+by = {"Revenue": "revenue", "Profit": "profit", "Units sold": "quantity"}[label]
+
+top = top_products(filtered, by, n).reset_index()
+bottom = bottom_products(filtered, by, n).reset_index()
+
+
+def product_bar(data, title, color):
+    data = data.assign(product=data["product"].str.title())
+    fig = px.bar(data, x=by, y="product", orientation="h",
+                 title=title, color_discrete_sequence=[color])
+    fig.update_layout(
+        yaxis={"categoryorder": "total ascending"},
+        xaxis_title=label,
+        yaxis_title=None,
+        margin=dict(l=0, r=0, t=40, b=0),
+    )
+    return fig
+
+
+col_top, col_bottom = st.columns(2)
+col_top.plotly_chart(product_bar(top, f"Top {n}", "#2e7d32"), width="stretch")
+col_bottom.plotly_chart(product_bar(bottom, f"Bottom {n}", "#e65100"), width="stretch")

@@ -98,3 +98,20 @@ def sales_by_shop(df, freq):
               .sum()
               .round(2)
               .reset_index())
+
+def product_ranking(df, by="revenue"):
+    return (df.groupby("product")
+              .agg(revenue=("revenue", "sum"),
+                   profit=("profit", "sum"),
+                   quantity=("quantity", "sum"))
+              .round(2)
+              .sort_values(by, ascending=False))
+
+
+def top_products(df, by="revenue", n=5):
+    return product_ranking(df, by).head(n)
+
+
+def bottom_products(df, by="revenue", n=5):
+    return product_ranking(df, by).tail(n).sort_values(by)
+
