@@ -1,5 +1,6 @@
 import pandas as pd
 
+# Load Data
 online_orders = pd.read_csv('data/raw/online_orders.csv')
 products = pd.read_csv('data/raw/products.csv')
 shop1_sales = pd.read_csv('data/raw/shop1_sales.csv')
@@ -19,21 +20,6 @@ def audit(df, name='deafult'):
     }
     return data
 
-before = [audit(online_orders, "online")]
-tabel_bfr = pd.DataFrame(before)
-tabel_bfr.to_csv("data/reports/online_order_report.csv")
-
-def formatting(df):
-    for column in df.select_dtypes(include=["object", "string"]).columns:
-        df[column] = df[column].str.lower().str.strip()
-    return df
-
-online_orders = formatting(online_orders)
-products = formatting(products)
-shop1_sales = formatting(shop1_sales)
-shop2_sales = formatting(shop2_sales)
-shop3_sales = formatting(shop3_sales)
-
 def info(df):
     print(df.head())
     print(df.columns.tolist())
@@ -42,6 +28,21 @@ def info(df):
     for column in df.columns:
         print(f"\nColumn: {column}")
         print(df[column].value_counts(dropna=False))
+
+def formatting(df):
+    for column in df.select_dtypes(include=["object", "string"]).columns:
+        df[column] = df[column].str.lower().str.strip()
+    return df
+
+# Online Orders Data Cleaning
+before = [audit(online_orders, "online")]
+tabel_bfr = pd.DataFrame(before)
+
+online_orders = formatting(online_orders)
+products = formatting(products)
+shop1_sales = formatting(shop1_sales)
+shop2_sales = formatting(shop2_sales)
+shop3_sales = formatting(shop3_sales)
 
 PRODUCT_CORRECTION = {
     "b-day cake": "birthday cake",
@@ -85,3 +86,6 @@ report["fixed"] = report["before"] - report["after"]
 report.to_csv("data/reports/online_report.csv", index=False)
 
 online_orders.to_csv('data/cleaned/online_cleaned.csv', index=False)
+
+# Products Data Cleaning
+products.to_csv('data/cleaned/products_cleaned.csv', index=False)

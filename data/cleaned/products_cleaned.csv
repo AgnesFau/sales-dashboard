@@ -1,0 +1,13 @@
+product,category,list_price,unit_cost
+croissant,pastry,3.5,1.1
+baguette,bread,2.8,0.7
+sourdough loaf,bread,6.5,1.9
+chocolate cake,cake,24.0,11.5
+cheesecake slice,cake,5.5,2.4
+cinnamon roll,pastry,4.0,1.3
+blueberry muffin,pastry,3.2,1.0
+espresso,drink,2.5,0.4
+latte,drink,3.8,0.9
+birthday cake,cake,38.0,22.0
+cookie,pastry,2.0,0.55
+rye bread,bread,5.9,1.8
