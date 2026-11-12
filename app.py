@@ -89,3 +89,23 @@ online_orders.to_csv('data/cleaned/online_cleaned.csv', index=False)
 
 # Products Data Cleaning
 products.to_csv('data/cleaned/products_cleaned.csv', index=False)
+
+# Shop 1 Sales Data Cleaning
+shop1_sales = shop1_sales.rename(columns={
+    "qty": "quantity",
+    "unit_price": "price"
+})
+shop1_sales["product"] = shop1_sales["product"].str.strip().str.lower().str.replace(r"\s+", " ", regex=True).replace(PRODUCT_CORRECTION)
+shop1_sales["timestamp"] = pd.to_datetime(
+    shop1_sales["date"] + " " + shop1_sales["time"],
+    format="%Y-%m-%d %H:%M",
+    errors="coerce",
+)
+shop1_sales = shop1_sales.drop(columns=["date", "time"])
+shop1_sales.loc[shop1_sales["price"] < 0, "price"] = pd.NA
+shop1_sales['price'] = shop1_sales['price'].fillna(shop1_sales['product'].map(products.set_index('product')['list_price']))
+
+shop1_sales.loc[~shop1_sales["quantity"].between(1, 20), "quantity"] = 1
+shop1_sales = shop1_sales.drop_duplicates(subset=["timestamp", "product", "quantity", "price"])
+
+shop1_sales.to_csv('data/cleaned/shop1_sales_cleaned.csv', index=False)
