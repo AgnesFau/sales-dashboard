@@ -11,8 +11,11 @@ sales["profit"] = sales["revenue"] - sales["cost"]
 
 sales.to_csv("data/sales_report.csv", index=False)
 
-print(f"Revenue: {sales['revenue'].sum():,.2f}")
-print(f"Profit: {sales['profit'].sum():,.2f}")
+sales["timestamp"] = pd.to_datetime(sales["timestamp"].str.upper(), errors="coerce")
 
-print(sales.groupby("shop")[["revenue", "profit"]].sum().round(2))
-print(sales.groupby("category")[["revenue", "profit"]].sum().round(2))
+def sales_by(freq):
+    return (sales.set_index("timestamp").resample(freq).agg(revenue=("revenue", "sum"), profit=("profit", "sum"), orders=("revenue", "count")).round(2))
+
+daily = sales_by("D")
+weekly = sales_by("W")
+monthly = sales_by("MS")
