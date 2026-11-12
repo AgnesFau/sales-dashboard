@@ -80,7 +80,7 @@ fig.update_layout(
 )
 st.plotly_chart(fig, width="stretch")
 
-from src.metrics import (bottom_products, filter_sales, load_sales, sales_by, sales_by_shop, top_products)
+from src.metrics import (bottom_products, filter_sales, load_sales, sales_by, sales_by_shop, shop_summary, top_products)
 
 st.subheader("Top and bottom products")
 
@@ -110,3 +110,30 @@ def product_bar(data, title, color):
 col_top, col_bottom = st.columns(2)
 col_top.plotly_chart(product_bar(top, f"Top {n}", "#2e7d32"), width="stretch")
 col_bottom.plotly_chart(product_bar(bottom, f"Bottom {n}", "#e65100"), width="stretch")
+
+st.subheader("Shop comparison")
+
+summary = shop_summary(filtered)
+
+money = summary.melt(id_vars="shop", value_vars=["revenue", "profit"],
+                     var_name="measure", value_name="amount")
+
+col_money, col_margin = st.columns([2, 1])
+
+fig_money = px.bar(
+    money, x="shop", y="amount", color="measure", barmode="group",
+    text_auto=".2s",
+    color_discrete_map={"revenue": "#90caf9", "profit": "#1565c0"},
+    title="Revenue and profit",
+)
+fig_money.update_layout(xaxis_title=None, yaxis_title="$", legend_title=None,
+                        margin=dict(l=0, r=0, t=40, b=0))
+col_money.plotly_chart(fig_money, width="stretch")
+
+fig_margin = px.bar(
+    summary, x="shop", y="margin_%", text_auto=".1f",
+    color_discrete_sequence=["#6a1b9a"], title="Profit margin (%)",
+)
+fig_margin.update_layout(xaxis_title=None, yaxis_title="%",
+                         margin=dict(l=0, r=0, t=40, b=0))
+col_margin.plotly_chart(fig_margin, width="stretch")

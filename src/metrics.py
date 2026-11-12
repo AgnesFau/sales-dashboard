@@ -115,3 +115,11 @@ def top_products(df, by="revenue", n=5):
 def bottom_products(df, by="revenue", n=5):
     return product_ranking(df, by).tail(n).sort_values(by)
 
+def shop_summary(df):
+    out = df.groupby("shop").agg(
+        revenue=("revenue", "sum"),
+        profit=("profit", "sum"),
+        orders=("status", lambda s: (s != "cancelled").sum()),
+    )
+    out["margin_%"] = (out["profit"] / out["revenue"] * 100).round(1)
+    return out.round(2).sort_values("revenue", ascending=False).reset_index()
