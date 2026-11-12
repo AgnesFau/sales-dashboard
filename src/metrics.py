@@ -37,5 +37,9 @@ def bottom_products(sales, by="revenue", n=10):
 ranking = product_ranking(sales)
 ranking["margin_%"] = (ranking["profit"] / ranking["revenue"] * 100).round(1)
 
+cakes = sales[sales["category"] == "cake"]
+by_shop = cakes.groupby("shop").agg(revenue=("revenue", "sum"), profit=("profit", "sum"))
+by_shop["margin_%"] = (by_shop["profit"] / by_shop["revenue"] * 100).round(1)
+
 
 
