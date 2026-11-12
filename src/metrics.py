@@ -19,3 +19,23 @@ def sales_by(freq):
 daily = sales_by("D")
 weekly = sales_by("W")
 monthly = sales_by("MS")
+
+def product_ranking(sales, by="revenue"):
+    return (sales.groupby("product")
+                 .agg(revenue=("revenue", "sum"),
+                      profit=("profit", "sum"),
+                      quantity=("quantity", "sum"))
+                 .round(2)
+                 .sort_values(by, ascending=False))
+
+def top_products(sales, by="revenue", n=10):
+    return product_ranking(sales, by).head(n)
+
+def bottom_products(sales, by="revenue", n=10):
+    return product_ranking(sales, by).tail(n).sort_values(by)
+
+ranking = product_ranking(sales)
+ranking["margin_%"] = (ranking["profit"] / ranking["revenue"] * 100).round(1)
+
+
+
